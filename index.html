@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Supervisor Fit Lab</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
+    <div class="auth-layout">
+      <div class="auth-story">
+        <div class="brand auth-brand"><div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div><div><p class="eyebrow">SUPERVISOR FIT LAB</p><h1>Your research, in one place.</h1></div></div>
+        <h2>Make a clear case for your next supervisor.</h2>
+        <p>Track prospective professors, weigh the evidence, and keep your shortlist in a workspace you can revisit from any device.</p>
+        <div class="auth-feature"><span>01</span><div><strong>Evaluate with context</strong><small>AI, cybersecurity, their intersection, and funding signals</small></div></div>
+        <div class="auth-feature"><span>02</span><div><strong>Keep candidates separate</strong><small>Your notes and shortlist stay inside your own account</small></div></div>
+      </div>
+      <div class="auth-panel panel">
+        <span class="status-pill"><span class="status-dot"></span> Personal workspace</span>
+        <h2 id="authTitle">Welcome back</h2>
+        <p id="authSubtitle">Sign in to your professor matcher.</p>
+        <div class="auth-tabs" role="tablist" aria-label="Account access">
+          <button id="loginTab" type="button" role="tab" aria-selected="true" class="active">Sign in</button>
+          <button id="registerTab" type="button" role="tab" aria-selected="false">Create account</button>
+        </div>
+        <form id="authForm">
+          <label class="field">Username<input id="authUsername" name="username" required autocomplete="username" minlength="3" maxlength="32" pattern="[a-zA-Z0-9_-]{3,32}" placeholder="Your username" /></label>
+          <label class="field">Password<input id="authPassword" name="password" type="password" required autocomplete="current-password" minlength="12" maxlength="128" placeholder="At least 12 characters" /></label>
+          <p class="auth-hint hidden" id="registerHint">Use at least 12 characters. Password recovery is not available yet, so keep your password in a safe place.</p>
+          <div class="form-error hidden" id="authError" role="alert"></div>
+          <button class="button primary auth-submit" id="authSubmit" type="submit">Sign in</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell hidden" id="appShell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div>
+          <p class="eyebrow">PRIVATE RESEARCH WORKSPACE</p>
+          <h1>Supervisor Fit Lab</h1>
+        </div>
+      </div>
+      <div class="top-actions">
+            <button class="button ghost account-button" id="accountBtn" type="button" title="Sign out"><span id="accountName">Account</span> · Sign out</button>
+            <button class="button ghost" id="weightsBtn" type="button">Scoring model</button>
+        <button class="button primary" id="addBtn" type="button"><span aria-hidden="true">＋</span> Add professor</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero panel">
+        <div class="hero-copy">
+          <span class="status-pill"><span class="status-dot"></span> Your private workspace</span>
+          <h2>Build a shortlist you can defend.</h2>
+          <p>Compare prospective CS supervisors against your intended direction in AI, cybersecurity, and their intersection—without hiding missing evidence.</p>
+        </div>
+        <div class="interest-card" aria-label="Research direction">
+          <div class="interest-head">
+            <span>YOUR RESEARCH DIRECTION</span>
+            <button class="text-button" id="editDirectionBtn" type="button">Edit</button>
+          </div>
+          <div class="interest-tags" id="interestTags"></div>
+          <p id="directionNote"></p>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="import-banner panel hidden" id="importBanner"><div><strong>Previous browser data found</strong><p>You can bring your earlier professor notes and shortlist into this account.</p></div><button class="button secondary" id="importBtn" type="button">Import previous workspace</button></div>
+        <div class="sync-warning hidden" id="syncWarning" role="alert">This workspace changed in another tab. Reload the page before editing further.</div>
+        <div class="toolbar panel">
+          <div class="view-tabs" role="tablist" aria-label="Candidate views">
+            <button class="tab active" data-view="all" role="tab" aria-selected="true">All candidates <span id="allCount">0</span></button>
+            <button class="tab" data-view="shortlist" role="tab" aria-selected="false">Shortlist <span id="shortlistCount">0</span></button>
+          </div>
+          <div class="filters">
+            <label class="search-field">
+              <span aria-hidden="true">⌕</span>
+              <input id="searchInput" type="search" placeholder="Search name, area, university…" autocomplete="off" />
+            </label>
+            <label class="select-wrap">
+              <span class="sr-only">University</span>
+              <select id="universityFilter"><option value="all">All universities</option></select>
+            </label>
+            <label class="select-wrap">
+              <span class="sr-only">Evidence status</span>
+              <select id="evidenceFilter">
+                <option value="all">All evidence levels</option>
+                <option value="scored">Scored</option>
+                <option value="unscored">Needs evidence</option>
+              </select>
+            </label>
+            <label class="select-wrap">
+              <span class="sr-only">Sort candidates</span>
+              <select id="sortSelect">
+                <option value="fit-desc">Highest fit</option>
+                <option value="coverage-desc">Most evidence</option>
+                <option value="name-asc">Name A–Z</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="summary-strip" id="summaryStrip"></div>
+        <div class="candidate-grid" id="candidateGrid" aria-live="polite"></div>
+        <div class="empty-state panel hidden" id="emptyState">
+          <div class="empty-icon">⌕</div>
+          <h3 id="emptyTitle">No candidates match these filters</h3>
+          <p id="emptyText">Clear a filter or add a professor to continue your comparison.</p>
+          <button class="button secondary" id="clearFiltersBtn" type="button">Clear filters</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="compare-bar hidden" id="compareBar" aria-live="polite">
+    <div>
+      <strong id="compareCount">0 selected</strong>
+      <span>Select 2–3 candidates for a focused comparison.</span>
+    </div>
+    <div class="compare-actions">
+      <button class="button ghost-on-dark" id="clearCompareBtn" type="button">Clear</button>
+      <button class="button light" id="openCompareBtn" type="button" disabled>Compare side by side</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="professorModal" role="dialog" aria-modal="true" aria-labelledby="professorModalTitle">
+    <div class="modal card-modal">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">CANDIDATE PROFILE</p>
+          <h2 id="professorModalTitle">Add professor</h2>
+        </div>
+        <button class="icon-button" type="button" data-close="professorModal" aria-label="Close">×</button>
+      </div>
+      <form id="professorForm" novalidate>
+        <input type="hidden" id="professorId" />
+        <div class="profile-analyzer">
+          <label class="field">Professor profile link <small>Public faculty page, HTTPS</small><input id="professorProfileUrl" type="url" maxlength="1000" placeholder="https://university.edu/people/professor" /></label>
+          <button class="button secondary" id="analyzeProfileBtn" type="button">Analyze profile link</button>
+          <p class="profile-status" id="profileStatus">Paste a profile link to suggest details, then review them before saving.</p>
+          <div class="evidence-panel hidden" id="profileEvidence" aria-live="polite"></div>
+        </div>
+        <div class="form-grid two">
+          <label class="field">Professor name <span>*</span><input id="professorName" required maxlength="120" /></label>
+          <label class="field">University <span>*</span><input id="professorUniversity" required maxlength="160" /></label>
+        </div>
+        <label class="field">Research areas <small>Comma-separated; enter “Unknown” if not verified.</small><input id="professorAreas" maxlength="400" placeholder="e.g., trustworthy ML, network security" /></label>
+        <div class="rating-block">
+          <div class="rating-head">
+            <div><h3>Evidence-based alignment</h3><p>Choose Unknown until you have profile, lab, or publication evidence.</p></div>
+            <span class="method-badge">0–5 scale</span>
+          </div>
+          <div class="form-grid three">
+            <label class="field">AI alignment<select id="aiRating"></select></label>
+            <label class="field">Cybersecurity alignment<select id="cyberRating"></select></label>
+            <label class="field">AI × cyber intersection<select id="intersectionRating"></select></label>
+          </div>
+        </div>
+        <div class="form-grid two">
+          <label class="field">Funding signal<select id="fundingRating">
+            <option value="">Unknown</option><option value="0">No visible signal</option><option value="2">Weak / indirect</option><option value="3">Possible</option><option value="4">Positive</option><option value="5">Strong / explicit</option>
+          </select></label>
+          <label class="field">Evidence source <input id="evidenceSource" maxlength="240" placeholder="e.g., lab page reviewed 2026-09-16" /></label>
+        </div>
+        <label class="field">Notes<textarea id="professorNotes" rows="4" maxlength="1200" placeholder="Questions to verify, application timing, fit concerns…"></textarea></label>
+        <div class="form-error hidden" id="formError" role="alert"></div>
+        <div class="modal-actions">
+          <button class="button danger-text hidden" id="deleteProfessorBtn" type="button">Delete</button>
+          <div class="spacer"></div>
+          <button class="button ghost" type="button" data-close="professorModal">Cancel</button>
+          <button class="button primary" type="submit">Save candidate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="weightsModal" role="dialog" aria-modal="true" aria-labelledby="weightsModalTitle">
+    <div class="modal compact-modal">
+      <div class="modal-head">
+        <div><p class="eyebrow">TRANSPARENT SCORING</p><h2 id="weightsModalTitle">Scoring model</h2></div>
+        <button class="icon-button" type="button" data-close="weightsModal" aria-label="Close">×</button>
+      </div>
+      <p class="modal-intro">Fit uses only criteria with known evidence. Evidence coverage is shown separately so a high score with little evidence cannot masquerade as certainty.</p>
+      <form id="weightsForm">
+        <div id="weightControls"></div>
+        <div class="weight-total"><span>Total weight</span><strong id="weightTotal">100%</strong></div>
+        <div class="formula-box"><strong>Formula</strong><code>known weighted points ÷ known weights</code><span>Unknown criteria are excluded—not scored as zero.</span></div>
+        <div class="form-error hidden" id="weightsError" role="alert"></div>
+        <div class="modal-actions">
+          <button class="button ghost" id="resetWeightsBtn" type="button">Balanced default</button>
+          <div class="spacer"></div>
+          <button class="button primary" type="submit">Apply weights</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="directionModal" role="dialog" aria-modal="true" aria-labelledby="directionModalTitle">
+    <div class="modal compact-modal">
+      <div class="modal-head">
+        <div><p class="eyebrow">YOUR TARGET</p><h2 id="directionModalTitle">Research direction</h2></div>
+        <button class="icon-button" type="button" data-close="directionModal" aria-label="Close">×</button>
+      </div>
+      <form id="directionForm">
+        <label class="field">Research interests <small>Comma-separated</small><input id="directionInterests" required maxlength="300" /></label>
+        <label class="field">Working focus statement<textarea id="directionText" rows="4" maxlength="600"></textarea></label>
+        <div class="modal-actions"><div class="spacer"></div><button class="button ghost" type="button" data-close="directionModal">Cancel</button><button class="button primary" type="submit">Save direction</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="compareModal" role="dialog" aria-modal="true" aria-labelledby="compareModalTitle">
+    <div class="modal compare-modal">
+      <div class="modal-head sticky">
+        <div><p class="eyebrow">SIDE-BY-SIDE</p><h2 id="compareModalTitle">Candidate comparison</h2></div>
+        <button class="icon-button" type="button" data-close="compareModal" aria-label="Close">×</button>
+      </div>
+      <div class="comparison-grid" id="comparisonGrid"></div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
